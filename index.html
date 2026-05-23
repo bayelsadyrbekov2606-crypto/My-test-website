@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>АнтиДолг ИИ — Финансовый Дашборд</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --accent: #00E5C3;
+      --accent2: #7C3AED;
+      --danger: #FF4757;
+      --warn: #FFB300;
+      --bg-dark: #0A0E1A;
+      --bg-card: #111827;
+      --bg-card2: #1A2235;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #E2E8F0;
+      --text-muted: #64748B;
+      --font: 'Space Grotesk', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    .light {
+      --bg-dark: #F0F4FF;
+      --bg-card: #FFFFFF;
+      --bg-card2: #F8FAFF;
+      --border: rgba(0, 0, 0, 0.08);
+      --text: #1E293B;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    .glass {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .glass2 {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    input,
+    select,
+    textarea {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      width: 100%;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #0A0E1A;
+    }
+
+    .btn-accent:hover {
+      opacity: .85;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      opacity: .85;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-green {
+      background: rgba(0, 229, 195, .15);
+      color: var(--accent);
+    }
+
+    .badge-red {
+      background: rgba(255, 71, 87, .15);
+      color: var(--danger);
+    }
+
+    .badge-yellow {
+      background: rgba(255, 179, 0, .15);
+      color: var(--warn);
+    }
+
+    .badge-purple {
+      background: rgba(124, 58, 237, .15);
+      color: var(--accent2);
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all .2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0A0E1A;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .debt-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card2);
+      margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+
+    .debt-row:hover {
+      border-color: var(--accent);
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .5s;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .chat-user {
+      background: var(--accent2);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      margin-left: auto;
+    }
+
+    .chat-bot {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .dot-anim span {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin: 0 2px;
+      animation: bounce 1.2s infinite;
+    }
+
+    .dot-anim span:nth-child(2) {
+      animation-delay: .2s;
+    }
+
+    .dot-anim span:nth-child(3) {
+      animation-delay: .4s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0)
+      }
+
+      30% {
+        transform: translateY(-7px)
+      }
+    }
+
+    .ai-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      animation: pulse-ring 3s infinite;
+    }
+
+    @keyframes pulse-ring {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 229, 195, .4)
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(0, 229, 195, 0)
+      }
+    }
+
+    .stat-card {
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .section-fade {
+      animation: fadeIn .3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-card2);
+      border-radius: 999px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: .3s;
+    }
+
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 2px;
+      top: 2px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: .3s;
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle-switch input:checked+.toggle-slider:before {
+      transform: translateX(20px);
+      background: #0A0E1A;
+    }
+
+    select option {
+      background: var(--bg-card);
+    }
+
+    @media(max-width:640px) {
+      .stat-val {
+        font-size: 22px;
+      }
+
+      .debt-row {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- HEADER -->
+    <header
+      style="position:sticky;top:0;z-index:50;background:rgba(10,14,26,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)">
+      <div
+        style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div
+            style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px">
+            ⚡</div>
+          <span style="font-size:18px;font-weight:700;letter-spacing:-.5px">АнтиДолг <span
+              style="color:var(--accent)">ИИ</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-ghost" onclick="openAddDebt(null)" style="padding:8px 14px">+ Долг</button>
+          <label class="toggle-switch" title="Светлая тема">
+            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+            <span class="toggle-slider"></span>
+          </label>
+          <button class="btn btn-ghost" style="padding:8px 12px;font-size:18px" onclick="toggleChat()">🤖</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main style="max-width:1200px;margin:0 auto;padding:24px 20px 120px">
+
+      <!-- TABS -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px">
+        <button class="tab-btn active" onclick="showTab('dashboard',this)">Дашборд</button>
+        <button class="tab-btn" onclick="showTab('myDebts',this)">Мои долги</button>
+        <button class="tab-btn" onclick="showTab('theirDebts',this)">Должны мне</button>
+        <button class="tab-btn" onclick="showTab('planner',this)">Планировщик</button>
+        <button class="tab-btn" onclick="showTab('archive',this)">Архив</button>
+      </div>
+
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dashboard" class="section-fade">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px"
+          id="statsGrid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+          <div class="glass" style="padding:20px">
+            <p
+              style="font-size:12px;color:var(--text-muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px">
+              Мои долги — топ</p>
+            <div id="topMyDebts"></div>
+          </div>
+          <div class="glass" style="padding:20px">
+            <p
+              style="font-size:12px;color:var(--text-muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px">
+              Мне должны — топ</p>
+            <div id="topTheirDebts"></div>
+          </div>
+        </div>
+        <div class="glass" style="padding:20px">
+          <p
+            style="font-size:12px;color:var(--text-muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:1px">
+            Ближайшие дедлайны</p>
+          <div id="deadlineList"></div>
+        </div>
+      </div>
+
+      <!-- MY DEBTS TAB -->
+      <div id="tab-myDebts" class="section-fade" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="font-size:20px;font-weight:600">Мои долги</h2>
+          <button class="btn btn-accent" onclick="openAddDebt('my')">+ Добавить</button>
+        </div>
+        <div id="myDebtsList"></div>
+      </div>
+
+      <!-- THEIR DEBTS TAB -->
+      <div id="tab-theirDebts" class="section-fade" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="font-size:20px;font-weight:600">Мне должны</h2>
+          <button class="btn btn-accent" onclick="openAddDebt('their')">+ Добавить</button>
+        </div>
+        <div id="theirDebtsList"></div>
+      </div>
+
+      <!-- PLANNER TAB -->
+      <div id="tab-planner" class="section-fade" style="display:none">
+        <h2 style="font-size:20px;font-weight:600;margin-bottom:20px">Стратегия Свободы</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px">
+          <div class="glass" style="padding:24px">
+            <p style="font-size:13px;color:var(--accent);font-weight:600;margin-bottom:16px">📊 ТЕМП ВЫПЛАТ</p>
+            <div style="margin-bottom:14px">
+              <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Ежемесячный бюджет
+                на долги (₽)</label>
+              <input type="number" id="monthlyBudget" placeholder="15000" oninput="calcFreedom()">
+            </div>
+            <div id="freedomResult" style="margin-top:16px"></div>
+          </div>
+          <div class="glass" style="padding:24px">
+            <p style="font-size:13px;color:var(--accent2);font-weight:600;margin-bottom:16px">🎯 ХОЧУ СВОБОДУ К ДАТЕ</p>
+            <div style="margin-bottom:14px">
+              <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Желаемая
+                дата</label>
+              <input type="month" id="targetDate" oninput="calcNeeded()">
+            </div>
+            <div id="neededResult" style="margin-top:16px"></div>
+          </div>
+        </div>
+        <div class="glass" style="padding:20px">
+          <p
+            style="font-size:12px;color:var(--text-muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px">
+            Прогноз выплат по месяцам</p>
+          <div style="position:relative;height:260px">
+            <canvas id="plannerChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHIVE TAB -->
+      <div id="tab-archive" class="section-fade" style="display:none">
+        <h2 style="font-size:20px;font-weight:600;margin-bottom:20px">Архив</h2>
+        <div id="archiveList"></div>
+      </div>
+    </main>
+
+    <!-- FLOATING CHAT BUTTON -->
+    <div id="chatToggleBtn" onclick="toggleChat()"
+      style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;z-index:60;box-shadow:0 4px 20px rgba(0,229,195,.3);animation:pulse-ring 3s infinite">
+      🤖</div>
+
+    <!-- CHAT PANEL -->
+    <div id="chatPanel"
+      style="display:none;position:fixed;bottom:90px;right:24px;width:340px;max-width:calc(100vw - 32px);background:var(--bg-card);border:1px solid var(--border);border-radius:20px;z-index:61;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <div class="ai-avatar">🧠</div>
+        <div>
+          <p style="font-size:14px;font-weight:600">ФинАссистент ИИ</p>
+          <p style="font-size:11px;color:var(--accent)">● онлайн</p>
+        </div>
+        <button onclick="toggleChat()"
+          style="margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px">✕</button>
+      </div>
+      <div id="chatMessages"
+        style="height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px"></div>
+      <div style="padding:12px;border-top:1px solid var(--border)">
+        <div style="display:flex;gap-4px;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="quickChat('что делать?')">💡
+            Дай совет</button>
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="quickChat('аудит долгов')">📊
+            Аудит</button>
+          <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="quickChat('дедлайны')">⏰
+            Дедлайны</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="chatInput" placeholder="Напишите сообщение..." style="flex:1"
+            onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-accent" style="padding:10px 14px" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD/EDIT MODAL -->
+    <div id="debtModal" class="modal-overlay" style="display:none">
+      <div class="modal-box">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:20px" id="modalTitle">Добавить долг</h3>
+        <input type="hidden" id="editId">
+        <div style="display:grid;gap:14px">
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Тип</label>
+            <select id="debtType">
+              <option value="my">Мой долг (я должен)</option>
+              <option value="their">Мне должны</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Имя / Название</label>
+            <input type="text" id="debtName" placeholder="Максим / Банк Тинькофф">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Сумма (₽)</label>
+            <input type="number" id="debtAmount" placeholder="50000">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Уже выплачено
+              (₽)</label>
+            <input type="number" id="debtPaid" placeholder="0">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Дата дедлайна</label>
+            <input type="date" id="debtDeadline">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Процент (% в год, 0
+              если нет)</label>
+            <input type="number" id="debtRate" placeholder="0">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Комментарий</label>
+            <input type="text" id="debtNote" placeholder="Необязательно">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px">
+          <button class="btn btn-accent" style="flex:1" onclick="saveDebt()">Сохранить</button>
+          <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT MODAL -->
+    <div id="payModal" class="modal-overlay" style="display:none">
+      <div class="modal-box" style="max-width:360px">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:18px">Внести выплату</h3>
+        <input type="hidden" id="payId">
+        <div style="margin-bottom:14px">
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">Сумма выплаты
+            (₽)</label>
+          <input type="number" id="payAmount" placeholder="5000">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button class="btn btn-accent" style="flex:1" onclick="submitPayment()">Внести</button>
+          <button class="btn btn-ghost" onclick="closePayModal()">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== STATE =====
+    let debts = JSON.parse(localStorage.getItem('antidebts') || '[]');
+    let chatHistory = JSON.parse(localStorage.getItem('antichat') || '[]');
+    let plannerChart = null;
+    let currentTab = 'dashboard';
+
+    function save() {
+      localStorage.setItem('antidebts', JSON.stringify(debts));
+    }
+
+    // ===== THEME =====
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      if (plannerChart) plannerChart.destroy(), plannerChart = null;
+      if (currentTab === 'planner') renderPlannerChart();
+    }
+
+    // ===== TABS =====
+    function showTab(name, btn) {
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const el = document.getElementById('tab-' + name);
+      if (el) { el.style.display = ''; el.classList.add('section-fade'); }
+      if (btn) btn.classList.add('active');
+      currentTab = name;
+      if (name === 'dashboard') renderDashboard();
+      if (name === 'myDebts') renderDebtList('my');
+      if (name === 'theirDebts') renderDebtList('their');
+      if (name === 'planner') { calcFreedom(); calcNeeded(); renderPlannerChart(); }
+      if (name === 'archive') renderArchive();
+    }
+
+    // ===== UTILS =====
+    function fmt(n) { return Number(n).toLocaleString('ru'); }
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+    function daysLeft(d) {
+      if (!d) return null;
+      const diff = new Date(d) - new Date();
+      return Math.ceil(diff / 86400000);
+    }
+    function pct(paid, total) {
+      if (!total) return 0;
+      return Math.min(100, Math.round(paid / total * 100));
+    }
+
+    // ===== RENDER DASHBOARD =====
+    function renderDashboard() {
+      const myActive = debts.filter(d => d.type === 'my' && !d.closed);
+      const theirActive = debts.filter(d => d.type === 'their' && !d.closed);
+      const totalMy = myActive.reduce((s, d) => s + (d.amount - d.paid), 0);
+      const totalTheir = theirActive.reduce((s, d) => s + (d.amount - d.paid), 0);
+      const balance = totalTheir - totalMy;
+
+      const grid = document.getElementById('statsGrid');
+      grid.innerHTML = `
+    <div class="stat-card">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Я должен (остаток)</p>
+      <p class="stat-val" style="color:var(--danger)">₽${fmt(totalMy)}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">${myActive.length} долг(ов)</p>
+    </div>
+    <div class="stat-card">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Мне должны (остаток)</p>
+      <p class="stat-val" style="color:var(--accent)">₽${fmt(totalTheir)}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">${theirActive.length} долг(ов)</p>
+    </div>
+    <div class="stat-card">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Чистый баланс</p>
+      <p class="stat-val" style="color:${balance >= 0 ? 'var(--accent)' : 'var(--danger)'}">₽${fmt(balance)}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">${balance >= 0 ? 'Позитивный' : 'Негативный'}</p>
+    </div>
+    <div class="stat-card">
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Закрытых долгов</p>
+      <p class="stat-val" style="color:var(--accent2)">₽${fmt(debts.filter(d => d.closed).reduce((s, d) => s + d.amount, 0))}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">${debts.filter(d => d.closed).length} записей</p>
+    </div>
+  `;
+
+      const topMy = document.getElementById('topMyDebts');
+      if (!myActive.length) { topMy.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Нет активных долгов 🎉</p>'; }
+      else topMy.innerHTML = myActive.sort((a, b) => (b.amount - b.paid) - (a.amount - a.paid)).slice(0, 4).map(d => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:14px;font-weight:500">${d.name}</span>
+        <span style="font-size:13px;color:var(--danger);font-family:var(--mono)">₽${fmt(d.amount - d.paid)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct(d.paid, d.amount)}%"></div></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:3px">${pct(d.paid, d.amount)}% выплачено</p>
+    </div>
+  `).join('');
+
+      const topTheir = document.getElementById('topTheirDebts');
+      if (!theirActive.length) { topTheir.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Нет активных должников</p>'; }
+      else topTheir.innerHTML = theirActive.sort((a, b) => (b.amount - b.paid) - (a.amount - a.paid)).slice(0, 4).map(d => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:14px;font-weight:500">${d.name}</span>
+        <span style="font-size:13px;color:var(--accent);font-family:var(--mono)">₽${fmt(d.amount - d.paid)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct(d.paid, d.amount)}%"></div></div>
+    </div>
+  `).join('');
+
+      const dl = document.getElementById('deadlineList');
+      const upcoming = debts.filter(d => !d.closed && d.deadline).map(d => ({ ...d, days: daysLeft(d.deadline) })).filter(d => d.days !== null && d.days <= 30).sort((a, b) => a.days - b.days);
+      if (!upcoming.length) { dl.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Нет ближайших дедлайнов (в течение 30 дней) ✓</p>'; return; }
+      dl.innerHTML = upcoming.map(d => {
+        const badge = d.days < 0 ? '<span class="badge badge-red">Просрочен</span>' : d.days <= 3 ? '<span class="badge badge-red">Срочно!</span>' : d.days <= 7 ? '<span class="badge badge-yellow">Скоро</span>' : '<span class="badge badge-green">Норм</span>';
+        return `<div class="debt-row" style="justify-content:space-between">
+      <div><p style="font-size:14px;font-weight:500">${d.name}</p><p style="font-size:12px;color:var(--text-muted)">${d.deadline}</p></div>
+      <div style="text-align:right">${badge}<p style="font-size:13px;color:var(--text-muted);margin-top:4px">${d.days < 0 ? Math.abs(d.days) + ' дн. назад' : 'через ' + d.days + ' дн.'}</p></div>
+    </div>`;
+      }).join('');
+    }
+
+    // ===== RENDER DEBT LIST =====
+    function renderDebtList(type) {
+      const listId = type === 'my' ? 'myDebtsList' : 'theirDebtsList';
+      const el = document.getElementById(listId);
+      const active = debts.filter(d => d.type === type && !d.closed);
+      if (!active.length) { el.innerHTML = '<div class="glass2" style="padding:24px;text-align:center;color:var(--text-muted)">Нет активных записей. Добавьте первый долг!</div>'; return; }
+      el.innerHTML = active.map(d => {
+        const rest = d.amount - d.paid;
+        const p = pct(d.paid, d.amount);
+        const days = daysLeft(d.deadline);
+        let deadlineBadge = '';
+        if (d.deadline) {
+          if (days < 0) deadlineBadge = '<span class="badge badge-red">Просрочен</span>';
+          else if (days <= 3) deadlineBadge = `<span class="badge badge-red">⚠️ ${days} дн.</span>`;
+          else if (days <= 7) deadlineBadge = `<span class="badge badge-yellow">${days} дн.</span>`;
+          else deadlineBadge = `<span class="badge badge-green">${days} дн.</span>`;
+        }
+        return `<div class="debt-row" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
+          ${type === 'my' ? '💸' : '💰'}
+        </div>
+        <div style="flex:1;min-width:120px">
+          <p style="font-size:15px;font-weight:600">${d.name}</p>
+          <p style="font-size:12px;color:var(--text-muted)">${d.note || ''}</p>
+        </div>
+        <div style="text-align:right">
+          <p style="font-size:16px;font-weight:700;font-family:var(--mono);color:${type === 'my' ? 'var(--danger)' : 'var(--accent)'}">₽${fmt(rest)}</p>
+          <p style="font-size:11px;color:var(--text-muted)">из ₽${fmt(d.amount)}</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          ${deadlineBadge}
+          ${d.rate ? `<span class="badge badge-purple">${d.rate}%</span>` : ''}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="openPayModal('${d.id}')">+Выплата</button>
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="openAddDebt(null,'${d.id}')">✏️</button>
+          <button class="btn btn-danger" style="padding:6px 10px;font-size:12px" onclick="closeDebt('${d.id}')">✓ Закр.</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:var(--text-muted)">Выплачено: ₽${fmt(d.paid)}</span>
+          <span style="font-size:11px;color:var(--text-muted)">${p}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${p}%"></div></div>
+      </div>
+      ${d.payments && d.payments.length ? `<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">История: ${d.payments.slice(-3).map(p => `₽${fmt(p.amount)} (${p.date})`).join(' · ')}</div>` : ''}
+    </div>`;
+      }).join('');
+    }
+
+    // ===== ARCHIVE =====
+    function renderArchive() {
+      const el = document.getElementById('archiveList');
+      const closed = debts.filter(d => d.closed);
+      if (!closed.length) { el.innerHTML = '<div class="glass2" style="padding:24px;text-align:center;color:var(--text-muted)">Архив пуст</div>'; return; }
+      el.innerHTML = closed.map(d => `
+    <div class="debt-row" style="justify-content:space-between;opacity:.7">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">${d.type === 'my' ? '💸' : '💰'}</span>
+        <div>
+          <p style="font-size:14px;font-weight:500">${d.name}</p>
+          <p style="font-size:12px;color:var(--text-muted)">${d.type === 'my' ? 'Мой долг' : 'Мне должны'} · ₽${fmt(d.amount)}</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge badge-green">Закрыт</span>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px" onclick="deleteDebt('${d.id}')">🗑</button>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ===== MODALS =====
+    function openAddDebt(defaultType, editId) {
+      const modal = document.getElementById('debtModal');
+      modal.style.display = 'flex';
+      if (editId) {
+        const d = debts.find(x => x.id === editId);
+        if (!d) return;
+        document.getElementById('editId').value = editId;
+        document.getElementById('modalTitle').textContent = 'Редактировать долг';
+        document.getElementById('debtType').value = d.type;
+        document.getElementById('debtName').value = d.name;
+        document.getElementById('debtAmount').value = d.amount;
+        document.getElementById('debtPaid').value = d.paid;
+        document.getElementById('debtDeadline').value = d.deadline || '';
+        document.getElementById('debtRate').value = d.rate || 0;
+        document.getElementById('debtNote').value = d.note || '';
+      } else {
+        document.getElementById('editId').value = '';
+        document.getElementById('modalTitle').textContent = 'Добавить долг';
+        document.getElementById('debtType').value = defaultType || 'my';
+        document.getElementById('debtName').value = '';
+        document.getElementById('debtAmount').value = '';
+        document.getElementById('debtPaid').value = '';
+        document.getElementById('debtDeadline').value = '';
+        document.getElementById('debtRate').value = 0;
+        document.getElementById('debtNote').value = '';
+      }
+    }
+    function closeModal() { document.getElementById('debtModal').style.display = 'none'; }
+    function saveDebt() {
+      const editId = document.getElementById('editId').value;
+      const name = document.getElementById('debtName').value.trim();
+      const amount = parseFloat(document.getElementById('debtAmount').value);
+      if (!name || !amount) { alert('Заполните имя и сумму'); return; }
+      if (editId) {
+        const idx = debts.findIndex(d => d.id === editId);
+        if (idx >= 0) {
+          debts[idx] = { ...debts[idx], name, amount, paid: parseFloat(document.getElementById('debtPaid').value) || 0, deadline: document.getElementById('debtDeadline').value, rate: parseFloat(document.getElementById('debtRate').value) || 0, note: document.getElementById('debtNote').value };
+        }
+      } else {
+        debts.push({ id: uid(), type: document.getElementById('debtType').value, name, amount, paid: parseFloat(document.getElementById('debtPaid').value) || 0, deadline: document.getElementById('debtDeadline').value, rate: parseFloat(document.getElementById('debtRate').value) || 0, note: document.getElementById('debtNote').value, payments: [], closed: false, created: new Date().toISOString().slice(0, 10) });
+      }
+      save();
+      closeModal();
+      showTab(currentTab);
+      renderDashboard();
+    }
+    function closeDebt(id) {
+      const d = debts.find(x => x.id === id);
+      if (d) { d.closed = true; d.paid = d.amount; save(); showTab(currentTab); renderDashboard(); }
+    }
+    function deleteDebt(id) {
+      if (confirm('Удалить запись?')) { debts = debts.filter(d => d.id !== id); save(); renderArchive(); }
+    }
+
+    // ===== PAYMENT =====
+    function openPayModal(id) { document.getElementById('payId').value = id; document.getElementById('payAmount').value = ''; document.getElementById('payModal').style.display = 'flex'; }
+    function closePayModal() { document.getElementById('payModal').style.display = 'none'; }
+    function submitPayment() {
+      const id = document.getElementById('payId').value;
+      const amount = parseFloat(document.getElementById('payAmount').value);
+      if (!amount) return;
+      const d = debts.find(x => x.id === id);
+      if (!d) return;
+      d.paid = Math.min(d.amount, d.paid + amount);
+      if (!d.payments) d.payments = [];
+      d.payments.push({ amount, date: new Date().toISOString().slice(0, 10) });
+      if (d.paid >= d.amount) d.closed = true;
+      save();
+      closePayModal();
+      showTab(currentTab);
+      renderDashboard();
+    }
+
+    // ===== PLANNER =====
+    const MONTHS_RU = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+    function totalRemainingDebt() {
+      return debts.filter(d => d.type === 'my' && !d.closed).reduce((s, d) => s + (d.amount - d.paid), 0);
+    }
+    function calcFreedom() {
+      const budget = parseFloat(document.getElementById('monthlyBudget').value) || 0;
+      const total = totalRemainingDebt();
+      const el = document.getElementById('freedomResult');
+      if (!budget || !total) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Введите бюджет и добавьте долги</p>'; renderPlannerChart(); return; }
+      const months = Math.ceil(total / budget);
+      const freedomDate = new Date();
+      freedomDate.setMonth(freedomDate.getMonth() + months);
+      el.innerHTML = `
+    <div style="background:rgba(0,229,195,.08);border:1px solid rgba(0,229,195,.2);border-radius:12px;padding:14px">
+      <p style="font-size:12px;color:var(--text-muted)">Дата свободы</p>
+      <p style="font-size:22px;font-weight:700;color:var(--accent);font-family:var(--mono)">${MONTHS_RU[freedomDate.getMonth()]} ${freedomDate.getFullYear()}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">через ${months} месяц(ев) · ₽${fmt(budget)}/мес</p>
+    </div>
+  `;
+      renderPlannerChart(budget);
+    }
+    function calcNeeded() {
+      const dateStr = document.getElementById('targetDate').value;
+      const el = document.getElementById('neededResult');
+      if (!dateStr) { el.innerHTML = ''; return; }
+      const target = new Date(dateStr + '-01');
+      const now = new Date();
+      const total = totalRemainingDebt();
+      const months = Math.max(1, (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth()));
+      const needed = Math.ceil(total / months);
+      el.innerHTML = `
+    <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:14px">
+      <p style="font-size:12px;color:var(--text-muted)">Нужно платить в месяц</p>
+      <p style="font-size:22px;font-weight:700;color:var(--accent2);font-family:var(--mono)">₽${fmt(needed)}</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:4px">за ${months} мес. · всего ₽${fmt(total)}</p>
+    </div>
+  `;
+    }
+    function renderPlannerChart(budget) {
+      if (!budget) budget = parseFloat(document.getElementById('monthlyBudget').value) || 10000;
+      const total = totalRemainingDebt();
+      if (!total) return;
+      const labels = [], data = [];
+      let remaining = total;
+      const now = new Date();
+      let m = now.getMonth(), y = now.getFullYear();
+      while (remaining > 0 && labels.length < 60) {
+        labels.push(MONTHS_RU[m] + ' ' + y);
+        data.push(Math.max(0, Math.round(remaining)));
+        remaining -= budget;
+        m++; if (m > 11) { m = 0; y++; }
+      }
+      data.push(0); labels.push(labels[labels.length - 1] ? MONTHS_RU[m] + ' ' + y : '');
+
+      const isDark = !document.body.classList.contains('light');
+      const ctx = document.getElementById('plannerChart').getContext('2d');
+      if (plannerChart) plannerChart.destroy();
+      plannerChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Остаток долга (₽)',
+            data,
+            borderColor: '#00E5C3',
+            backgroundColor: 'rgba(0,229,195,.1)',
+            fill: true,
+            tension: .4,
+            pointRadius: 3,
+            pointBackgroundColor: '#00E5C3'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: isDark ? '#94A3B8' : '#64748B', font: { family: 'Space Grotesk' } } } },
+          scales: {
+            x: { ticks: { color: isDark ? '#64748B' : '#94A3B8', maxTicksLimit: 8, font: { family: 'Space Grotesk', size: 11 } }, grid: { color: isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)' } },
+            y: { ticks: { color: isDark ? '#64748B' : '#94A3B8', callback: v => '₽' + Number(v).toLocaleString('ru'), font: { family: 'Space Grotesk', size: 11 } }, grid: { color: isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.05)' } }
+          }
+        }
+      });
+    }
+
+    // ===== CHAT =====
+    let chatOpen = false;
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chatPanel').style.display = chatOpen ? 'block' : 'none';
+      if (chatOpen && document.getElementById('chatMessages').children.length === 0) {
+        renderChatHistory();
+        if (!chatHistory.length) botMessage('Привет! Я твой ИИ-ассистент по финансам. Могу добавлять долги, давать советы и анализировать ситуацию. Попробуй написать: "запиши долг Максу 5000 до 15.09" или нажми кнопку "Дай совет" 💡');
+      }
+    }
+    function quickChat(text) { document.getElementById('chatInput').value = text; sendChat(); }
+    function renderChatHistory() {
+      const box = document.getElementById('chatMessages');
+      box.innerHTML = '';
+      chatHistory.forEach(m => appendBubble(m.role, m.text, false));
+    }
+    function appendBubble(role, text, save = true) {
+      if (save) {
+        chatHistory.push({ role, text });
+        if (chatHistory.length > 60) chatHistory.shift();
+        localStorage.setItem('antichat', JSON.stringify(chatHistory));
+      }
+      const box = document.getElementById('chatMessages');
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;align-items:flex-end;gap:8px;' + (role === 'user' ? 'flex-direction:row-reverse' : '');
+      if (role === 'bot') wrap.innerHTML = `<div class="ai-avatar" style="width:28px;height:28px;font-size:13px;animation:none">🧠</div>`;
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble ' + (role === 'user' ? 'chat-user' : 'chat-bot');
+      bubble.innerHTML = text;
+      wrap.appendChild(bubble);
+      box.appendChild(wrap);
+      box.scrollTop = box.scrollHeight;
+    }
+    function showTyping() {
+      const box = document.getElementById('chatMessages');
+      const el = document.createElement('div');
+      el.id = 'typing';
+      el.style.cssText = 'display:flex;align-items:center;gap:8px';
+      el.innerHTML = `<div class="ai-avatar" style="width:28px;height:28px;font-size:13px;animation:none">🧠</div><div class="chat-bot chat-bubble"><div class="dot-anim"><span></span><span></span><span></span></div></div>`;
+      box.appendChild(el);
+      box.scrollTop = box.scrollHeight;
+    }
+    function removeTyping() { const el = document.getElementById('typing'); if (el) el.remove(); }
+
+    function sendChat() {
+      const inp = document.getElementById('chatInput');
+      const text = inp.value.trim();
+      if (!text) return;
+      inp.value = '';
+      if (!chatOpen) { chatOpen = true; document.getElementById('chatPanel').style.display = 'block'; }
+      appendBubble('user', text);
+      showTyping();
+      setTimeout(() => { removeTyping(); const reply = processAI(text); appendBubble('bot', reply); }, 800 + Math.random() * 600);
+    }
+    function botMessage(text) { appendBubble('bot', text); }
+
+    // ===== AI LOGIC =====
+    function processAI(input) {
+      const txt = input.toLowerCase();
+      // Добавить долг
+      const addDebtPattern = /запис[а-я]*\s+долг\s+([а-яёa-z]+)\s+([\d]+)(?:\s+до\s+([\d\.]+))?/i;
+      const addDebtMatch = input.match(addDebtPattern);
+      if (addDebtMatch) {
+        const name = addDebtMatch[1];
+        const amount = parseFloat(addDebtMatch[2]);
+        const deadline = parseDeadline(addDebtMatch[3]);
+        debts.push({ id: uid(), type: 'my', name, amount, paid: 0, deadline: deadline || '', rate: 0, note: '', payments: [], closed: false, created: new Date().toISOString().slice(0, 10) });
+        save(); renderDashboard();
+        return `✅ Принято! Добавил долг <b>${name}</b> на <b>₽${fmt(amount)}</b>${deadline ? ' · дедлайн ' + deadline : ''}`;
+      }
+      // Мне должны
+      const addTheirPattern = /([а-яёa-z]+)\s+должен?\s+([\d]+)(?:\s+до\s+([\d\.]+))?/i;
+      const addTheirMatch = input.match(addTheirPattern);
+      if (addTheirMatch && !txt.includes('я')) {
+        const name = addTheirMatch[1];
+        const amount = parseFloat(addTheirMatch[2]);
+        const deadline = parseDeadline(addTheirMatch[3]);
+        debts.push({ id: uid(), type: 'their', name, amount, paid: 0, deadline: deadline || '', rate: 0, note: '', payments: [], closed: false, created: new Date().toISOString().slice(0, 10) });
+        save(); renderDashboard();
+        return `✅ Записал! <b>${name}</b> должен тебе <b>₽${fmt(amount)}</b>${deadline ? ' · дедлайн ' + deadline : ''}`;
+      }
+      // Выплата
+      const payPattern = /(?:отдал|заплатил|внес[а-я]*|перевел)\s+(?:[а-яёa-z]+\s+)?([\d]+)/i;
+      const payMatch = input.match(payPattern);
+      if (payMatch) {
+        const amount = parseFloat(payMatch[1]);
+        const nameGuess = input.match(/(?:отдал|заплатил|внес[а-я]*|перевел)\s+([а-яёa-z]+)/i);
+        const name = nameGuess ? nameGuess[1] : null;
+        let target = name ? debts.find(d => d.type === 'my' && !d.closed && d.name.toLowerCase().includes(name.toLowerCase())) : null;
+        if (!target) target = debts.filter(d => d.type === 'my' && !d.closed).sort((a, b) => (a.amount - a.paid) - (b.amount - b.paid))[0];
+        if (target) {
+          target.paid = Math.min(target.amount, target.paid + amount);
+          if (!target.payments) target.payments = [];
+          target.payments.push({ amount, date: new Date().toISOString().slice(0, 10) });
+          if (target.paid >= target.amount) target.closed = true;
+          save(); renderDashboard();
+          const rest = target.amount - target.paid;
+          return `💸 Отлично! Записал выплату ₽${fmt(amount)} по долгу <b>${target.name}</b>. Остаток: <b>₽${fmt(rest)}</b>${rest <= 0 ? ' 🎉 Долг закрыт!' : ''}`;
+        }
+        return `💸 Записал выплату ₽${fmt(amount)}. Уточни, кому именно, чтобы я обновил запись.`;
+      }
+      // Аудит / совет
+      if (txt.includes('аудит') || txt.includes('что делать') || txt.includes('совет') || txt.includes('помоги')) return aiAdvice();
+      if (txt.includes('дедлайн') || txt.includes('срок') || txt.includes('когда')) return aiDeadlines();
+      if (txt.includes('сколько должен') || txt.includes('итого') || txt.includes('сумм')) return aiSummary();
+      if (txt.includes('снежн') || txt.includes('лавин') || txt.includes('стратег')) return aiStrategy();
+      if (txt.includes('привет') || txt.includes('здравствуй') || txt.includes('добрый')) return `Привет! 👋 Я готов помочь с твоими долгами. Всего у тебя ${debts.filter(d => d.type === 'my' && !d.closed).length} активных долгов на ₽${fmt(totalRemainingDebt())}. Что хочешь сделать?`;
+      if (txt.includes('спасибо') || txt.includes('благодар')) return randomPhrases(['Всегда пожалуйста! 😊', 'Рад помочь! Обращайся.', 'Удачи с финансами! 💪']);
+      if (txt.includes('как дела') || txt.includes('как ты')) return `Отлично, спасибо! Слежу за твоими финансами 🔍. Кстати, напомню: у тебя ${debts.filter(d => d.type === 'my' && !d.closed).length} активных долгов.`;
+      // Default
+      return aiContextualReply(txt);
+    }
+
+    function parseDeadline(str) {
+      if (!str) return null;
+      const parts = str.split('.');
+      if (parts.length >= 2) {
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts.length >= 3 ? parts[2] : new Date().getFullYear();
+        return `${year}-${month}-${day}`;
+      }
+      return null;
+    }
+
+    function aiAdvice() {
+      const active = debts.filter(d => d.type === 'my' && !d.closed);
+      if (!active.length) return '🎉 Отличные новости! Активных долгов нет. Самое время сформировать финансовую подушку — рекомендую откладывать 10-20% дохода.';
+      const sorted = [...active].sort((a, b) => (a.amount - a.paid) - (b.amount - b.paid));
+      const smallest = sorted[0];
+      const biggest = sorted[sorted.length - 1];
+      const urgent = active.filter(d => d.deadline && daysLeft(d.deadline) <= 7 && daysLeft(d.deadline) >= 0);
+      let advice = `📊 <b>Финансовый аудит:</b><br><br>`;
+      if (urgent.length) advice += `⚠️ <b>СРОЧНО:</b> Дедлайн по "${urgent[0].name}" через ${daysLeft(urgent[0].deadline)} дн. (₽${fmt(urgent[0].amount - urgent[0].paid)} осталось)!<br><br>`;
+      advice += `🎯 <b>Метод Снежного кома:</b> Начни с "${smallest.name}" — там всего ₽${fmt(smallest.amount - smallest.paid)}. Быстрая победа даст мотивацию!<br><br>`;
+      advice += `💣 <b>Лавина:</b> Параллельно минимально закрывай "${biggest.name}" (₽${fmt(biggest.amount - biggest.paid)}) — он самый большой.<br><br>`;
+      advice += `📈 Суммарный долг: ₽${fmt(totalRemainingDebt())} по ${active.length} записям.`;
+      return advice;
+    }
+
+    function aiDeadlines() {
+      const urgent = debts.filter(d => !d.closed && d.deadline).map(d => ({ ...d, days: daysLeft(d.deadline) })).filter(d => d.days !== null && d.days <= 14).sort((a, b) => a.days - b.days);
+      if (!urgent.length) return '✅ Отлично! Ближайших дедлайнов (в течение 14 дней) нет. Можешь спать спокойно 😴';
+      let msg = `⏰ <b>Ближайшие дедлайны:</b><br><br>`;
+      urgent.forEach(d => {
+        const label = d.days < 0 ? '🔴 ПРОСРОЧЕН' : d.days === 0 ? '🔴 СЕГОДНЯ' : d.days <= 3 ? '🟠 через ' + d.days + ' дн.' : '🟡 через ' + d.days + ' дн.';
+        msg += `${label} — <b>${d.name}</b>: ₽${fmt(d.amount - d.paid)}<br>`;
+      });
+      return msg;
+    }
+
+    function aiSummary() {
+      const myDebts = debts.filter(d => d.type === 'my' && !d.closed);
+      const theirDebts = debts.filter(d => d.type === 'their' && !d.closed);
+      const myTotal = myDebts.reduce((s, d) => s + (d.amount - d.paid), 0);
+      const theirTotal = theirDebts.reduce((s, d) => s + (d.amount - d.paid), 0);
+      return `💰 <b>Итоговый баланс:</b><br><br>Я должен: <b style="color:var(--danger)">₽${fmt(myTotal)}</b> (${myDebts.length} долгов)<br>Мне должны: <b style="color:var(--accent)">₽${fmt(theirTotal)}</b> (${theirDebts.length} должников)<br>Чистый баланс: <b>₽${fmt(theirTotal - myTotal)}</b><br>Закрыто всего: ${debts.filter(d => d.closed).length} записей 🏆`;
+    }
+
+    function aiStrategy() {
+      const active = debts.filter(d => d.type === 'my' && !d.closed);
+      if (!active.length) return '🎉 Долгов нет — стратегия не нужна!';
+      const sorted = [...active].sort((a, b) => (a.amount - a.paid) - (b.amount - b.paid));
+      let msg = `📚 <b>Две стратегии погашения:</b><br><br>`;
+      msg += `❄️ <b>Снежный ком</b> (психологически легче): Сначала закрой "${sorted[0].name}" (₽${fmt(sorted[0].amount - sorted[0].paid)}) — это самый маленький. Потом следующий.<br><br>`;
+      msg += `🏔️ <b>Лавина</b> (экономически выгодно): Если есть проценты — бей по самому дорогому долгу. Экономит деньги на переплате.`;
+      return msg;
+    }
+
+    function aiContextualReply(txt) {
+      const active = debts.filter(d => d.type === 'my' && !d.closed);
+      const pool = [
+        `Понял! Если хочешь добавить долг, напиши: "запиши долг [имя] [сумма] до [дата]". Всего активных долгов: ${active.length}.`,
+        `Не совсем понял запрос. Попробуй: "что делать?", "аудит долгов", "дедлайны" или "сколько должен". Я отвечу по делу!`,
+        `Хм, дай подумаю... Твой общий долг сейчас: ₽${fmt(totalRemainingDebt())}. Хочешь узнать стратегию погашения?`,
+        `Могу помочь записать долг, внести выплату или дать финансовый совет. Что именно нужно?`,
+        `Интересный вопрос! Пока я анализирую твои ${active.length} долгов на ₽${fmt(totalRemainingDebt())}. Попробуй "дай совет" для полного аудита.`
+      ];
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function randomPhrases(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    // ===== INIT =====
+    function init() {
+      if (!debts.length) {
+        // Demo data
+        debts = [
+          { id: uid(), type: 'my', name: 'Банк Тинькофф', amount: 120000, paid: 35000, deadline: futureDate(45), rate: 18, note: 'Кредитная карта', payments: [{ amount: 35000, date: '2024-01-15' }], closed: false, created: '2024-01-01' },
+          { id: uid(), type: 'my', name: 'Макс', amount: 15000, paid: 5000, deadline: futureDate(12), rate: 0, note: 'До зарплаты', payments: [{ amount: 5000, date: '2024-02-01' }], closed: false, created: '2024-02-01' },
+          { id: uid(), type: 'my', name: 'Саша', amount: 8000, paid: 2000, deadline: futureDate(3), rate: 0, note: '', payments: [], closed: false, created: '2024-02-10' },
+          { id: uid(), type: 'their', name: 'Дима', amount: 25000, paid: 10000, deadline: futureDate(20), rate: 0, note: 'За ноутбук', payments: [], closed: false, created: '2024-01-20' },
+          { id: uid(), type: 'their', name: 'Катя', amount: 5000, paid: 0, deadline: futureDate(8), rate: 0, note: '', payments: [], closed: false, created: '2024-02-05' },
+          { id: uid(), type: 'my', name: 'Родители', amount: 50000, paid: 50000, deadline: '', rate: 0, note: 'Погашен', payments: [], closed: true, created: '2023-10-01' }
+        ];
+        save();
+      }
+      renderDashboard();
+      document.getElementById('tab-dashboard').style.display = '';
+    }
+
+    function futureDate(days) {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0, 10);
+    }
+
+    // Close modals on overlay click
+    document.getElementById('debtModal').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+    document.getElementById('payModal').addEventListener('click', function (e) { if (e.target === this) closePayModal(); });
+
+    init();
+  </script>
+</body>
+
+</html>
